@@ -755,49 +755,84 @@ class BurgerRank {
     }
 
     login(email, password) {
-        // Simple authentication - in real app, this would validate against server
-        const user = this.users.find(u => u.email === email);
-        if (user) {
-            this.currentUser = user;
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            this.showMainApp();
-            this.showToast(`Welcome back, ${user.userId}!`, 'success');
-            return true;
-        } else {
-            this.showToast('Invalid email or password', 'error');
+        try {
+            console.log('Login attempt for email:', email);
+            
+            // Validate inputs
+            if (!email || !password) {
+                this.showToast('Please enter both email and password', 'error');
+                return false;
+            }
+
+            // Simple authentication - in real app, this would validate against server
+            const user = this.users.find(u => u.email === email);
+            console.log('Found user:', user ? user.userId : 'not found');
+            
+            if (user) {
+                this.currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                this.showMainApp();
+                this.showToast(`Welcome back, ${user.userId}!`, 'success');
+                return true;
+            } else {
+                this.showToast('Invalid email or password', 'error');
+                return false;
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            this.showToast('Login failed. Please try again.', 'error');
             return false;
         }
     }
 
     signup(userId, email, phone, password) {
-        // Check if user ID already exists
-        if (this.users.find(u => u.userId === userId)) {
-            this.showToast('User ID already exists', 'error');
+        try {
+            console.log('Signup attempt for:', userId, email);
+            
+            // Validate inputs
+            if (!userId || !email || !phone || !password) {
+                this.showToast('Please fill in all fields', 'error');
+                return false;
+            }
+
+            // Check if user ID already exists
+            if (this.users.find(u => u.userId === userId)) {
+                this.showToast('User ID already exists', 'error');
+                return false;
+            }
+
+            // Check if email already exists
+            const existingUser = this.users.find(u => u.email === email);
+            if (existingUser) {
+                this.showToast('Email already registered. Try logging in instead.', 'error');
+                // Switch to login tab
+                this.switchAuthTab('login');
+                // Pre-fill the email
+                document.getElementById('login-email').value = email;
+                return false;
+            }
+
+            // Create new user
+            const newUser = {
+                id: this.generateId(),
+                userId: userId,
+                email: email,
+                phone: phone,
+                savedLists: []
+            };
+
+            this.users.push(newUser);
+            this.saveData();
+            this.currentUser = newUser;
+            localStorage.setItem('currentUser', JSON.stringify(newUser));
+            this.showMainApp();
+            this.showToast(`Welcome to BurgerRank, ${userId}!`, 'success');
+            return true;
+        } catch (error) {
+            console.error('Signup error:', error);
+            this.showToast('Signup failed. Please try again.', 'error');
             return false;
         }
-
-        // Check if email already exists
-        if (this.users.find(u => u.email === email)) {
-            this.showToast('Email already registered', 'error');
-            return false;
-        }
-
-        // Create new user
-        const newUser = {
-            id: this.generateId(),
-            userId: userId,
-            email: email,
-            phone: phone,
-            savedLists: []
-        };
-
-        this.users.push(newUser);
-        this.saveData();
-        this.currentUser = newUser;
-        localStorage.setItem('currentUser', JSON.stringify(newUser));
-        this.showMainApp();
-        this.showToast(`Welcome to BurgerRank, ${userId}!`, 'success');
-        return true;
     }
 
     logout() {
@@ -2156,19 +2191,31 @@ class BurgerRank {
         // Login form
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            this.login(email, password);
+            try {
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                console.log('Login form submitted');
+                this.login(email, password);
+            } catch (error) {
+                console.error('Login form error:', error);
+                this.showToast('Login failed. Please try again.', 'error');
+            }
         });
 
         // Signup form
         document.getElementById('signup-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const userId = document.getElementById('signup-userid').value;
-            const email = document.getElementById('signup-email').value;
-            const phone = document.getElementById('signup-phone').value;
-            const password = document.getElementById('signup-password').value;
-            this.signup(userId, email, phone, password);
+            try {
+                const userId = document.getElementById('signup-userid').value;
+                const email = document.getElementById('signup-email').value;
+                const phone = document.getElementById('signup-phone').value;
+                const password = document.getElementById('signup-password').value;
+                console.log('Signup form submitted');
+                this.signup(userId, email, phone, password);
+            } catch (error) {
+                console.error('Signup form error:', error);
+                this.showToast('Signup failed. Please try again.', 'error');
+            }
         });
 
         // Navigation
@@ -2451,13 +2498,24 @@ class BurgerRank {
     }
 
     showNewRankForm() {
-        // Clear the form
-        document.getElementById('burger-name').value = '';
-        document.getElementById('restaurant-name').value = '';
-        
-        // Enable the burger name and restaurant fields
-        document.getElementById('burger-name').disabled = false;
-        document.getElementById('restaurant-name').disabled = false;
+        try {
+            console.log('Show new rank form called, current user:', this.currentUser);
+            
+            // Check if user is logged in
+            if (!this.currentUser) {
+                console.log('No current user, redirecting to auth');
+                this.showToast('Please log in to rank a burger', 'error');
+                this.showAuthScreen();
+                return;
+            }
+
+            // Clear the form
+            document.getElementById('burger-name').value = '';
+            document.getElementById('restaurant-name').value = '';
+            
+            // Enable the burger name and restaurant fields
+            document.getElementById('burger-name').disabled = false;
+            document.getElementById('restaurant-name').disabled = false;
         
         // Clear any previous rating selection
         document.querySelectorAll('.rating-option').forEach(opt => opt.classList.remove('selected'));
@@ -2490,6 +2548,10 @@ class BurgerRank {
         
         // Show the rank screen
         this.showScreen('rank');
+        } catch (error) {
+            console.error('Error showing new rank form:', error);
+            this.showToast('Error loading rank form. Please try again.', 'error');
+        }
     }
 
     toggleRestaurantDetails() {
