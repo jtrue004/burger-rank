@@ -2218,37 +2218,65 @@ class BurgerRank {
             }
         });
 
-        // Navigation
-        document.getElementById('profile-btn').addEventListener('click', () => this.showScreen('profile'));
-        document.getElementById('my-lists-btn').addEventListener('click', () => this.showScreen('lists'));
-        document.getElementById('restaurants-btn').addEventListener('click', () => this.showScreen('restaurants'));
-        document.getElementById('map-btn').addEventListener('click', () => this.showScreen('map'));
-        document.getElementById('rank-burger-btn').addEventListener('click', () => this.showNewRankForm());
-        document.getElementById('my-lists-btn').addEventListener('click', () => this.showToast('Lists feature coming soon!', 'success'));
+        // Navigation (only if elements exist)
+        const profileBtn = document.getElementById('profile-btn');
+        if (profileBtn) {
+            profileBtn.addEventListener('click', () => this.showScreen('profile'));
+        }
 
-        // Search
-        document.getElementById('search-btn').addEventListener('click', () => {
-            this.performSearch();
-        });
+        const myListsBtn = document.getElementById('my-lists-btn');
+        if (myListsBtn) {
+            myListsBtn.addEventListener('click', () => this.showScreen('lists'));
+        }
 
-        // Search on Enter key
-        document.getElementById('zip-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
+        const restaurantsBtn = document.getElementById('restaurants-btn');
+        if (restaurantsBtn) {
+            restaurantsBtn.addEventListener('click', () => this.showScreen('restaurants'));
+        }
+
+        const mapBtn = document.getElementById('map-btn');
+        if (mapBtn) {
+            mapBtn.addEventListener('click', () => this.showScreen('map'));
+        }
+
+        const rankBurgerBtn = document.getElementById('rank-burger-btn');
+        if (rankBurgerBtn) {
+            rankBurgerBtn.addEventListener('click', () => this.showNewRankForm());
+        }
+
+        // Search (only if elements exist)
+        const searchBtn = document.getElementById('search-btn');
+        if (searchBtn) {
+            searchBtn.addEventListener('click', () => {
                 this.performSearch();
-            }
-        });
+            });
+        }
 
-        // Show all burgers
-        document.getElementById('show-all-btn').addEventListener('click', () => {
-            this.currentLocation = null;
-            this.searchRadius = null;
-            // If we're on the rank screen, go back to home first
-            if (document.getElementById('rank-screen').classList.contains('active')) {
-                this.showScreen('home');
-            }
-            this.loadLeaderboard();
-            this.showToast('Showing all burgers', 'success');
-        });
+        // Search on Enter key (only if element exists)
+        const zipInput = document.getElementById('zip-input');
+        if (zipInput) {
+            zipInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.performSearch();
+                }
+            });
+        }
+
+        // Show all burgers (only if element exists)
+        const showAllBtn = document.getElementById('show-all-btn');
+        if (showAllBtn) {
+            showAllBtn.addEventListener('click', () => {
+                this.currentLocation = null;
+                this.searchRadius = null;
+                // If we're on the rank screen, go back to home first
+                const rankScreen = document.getElementById('rank-screen');
+                if (rankScreen && rankScreen.classList.contains('active')) {
+                    this.showScreen('home');
+                }
+                this.loadLeaderboard();
+                this.showToast('Showing all burgers', 'success');
+            });
+        }
 
         // Recovery shortcut: Ctrl+Shift+R to restore from backup (safe)
         document.addEventListener('keydown', (e) => {
@@ -2257,80 +2285,113 @@ class BurgerRank {
             }
         });
 
-        // Radius controls
-        document.getElementById('radius-minus').addEventListener('click', () => {
-            const input = document.getElementById('radius-input');
-            const currentValue = parseInt(input.value);
-            if (currentValue > 1) {
-                input.value = currentValue - 1;
-            }
-        });
-
-        document.getElementById('radius-plus').addEventListener('click', () => {
-            const input = document.getElementById('radius-input');
-            const currentValue = parseInt(input.value);
-            if (currentValue < 100) {
-                input.value = currentValue + 1;
-            }
-        });
-
-        // Update radius when input changes
-        document.getElementById('radius-input').addEventListener('change', () => {
-            const input = document.getElementById('radius-input');
-            let value = parseInt(input.value);
-            if (isNaN(value) || value < 1) {
-                value = 1;
-            } else if (value > 100) {
-                value = 100;
-            }
-            input.value = value;
-        });
-
-        // Rank form
-        document.getElementById('rank-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const burgerName = document.getElementById('burger-name').value;
-            const restaurantName = document.getElementById('restaurant-name').value;
-            const rating = document.querySelector('.rating-option.selected')?.dataset.rating;
-            const comment = document.getElementById('burger-comment').value;
-            const photoFile = document.getElementById('burger-photo').files[0];
-
-            if (!rating) {
-                this.showToast('Please select a rating', 'error');
-                return;
-            }
-
-            this.submitRank(burgerName, restaurantName, rating, comment, photoFile);
-        });
-
-        // Rating options
-        document.querySelectorAll('.rating-option').forEach(option => {
-            option.addEventListener('click', () => {
-                document.querySelectorAll('.rating-option').forEach(opt => opt.classList.remove('selected'));
-                option.classList.add('selected');
+        // Radius controls (only if elements exist)
+        const radiusMinus = document.getElementById('radius-minus');
+        const radiusPlus = document.getElementById('radius-plus');
+        const radiusInput = document.getElementById('radius-input');
+        
+        if (radiusMinus) {
+            radiusMinus.addEventListener('click', () => {
+                const input = document.getElementById('radius-input');
+                if (input) {
+                    const currentValue = parseInt(input.value);
+                    if (currentValue > 1) {
+                        input.value = currentValue - 1;
+                    }
+                }
             });
-        });
+        }
 
-        // Cancel rank
-        document.getElementById('cancel-rank').addEventListener('click', () => this.showScreen('home'));
+        if (radiusPlus) {
+            radiusPlus.addEventListener('click', () => {
+                const input = document.getElementById('radius-input');
+                if (input) {
+                    const currentValue = parseInt(input.value);
+                    if (currentValue < 100) {
+                        input.value = currentValue + 1;
+                    }
+                }
+            });
+        }
 
-        // Live search for existing burgers
-        document.getElementById('burger-name').addEventListener('input', (e) => {
-            this.searchExistingBurgers(e.target.value);
-        });
+        if (radiusInput) {
+            radiusInput.addEventListener('change', () => {
+                const input = document.getElementById('radius-input');
+                if (input) {
+                    let value = parseInt(input.value);
+                    if (isNaN(value) || value < 1) {
+                        value = 1;
+                    } else if (value > 100) {
+                        value = 100;
+                    }
+                    input.value = value;
+                }
+            });
+        }
 
-        // Live search for existing restaurants
-        document.getElementById('restaurant-name').addEventListener('input', (e) => {
-            this.searchExistingRestaurants(e.target.value);
-        });
+        // Rank form (only if element exists)
+        const rankForm = document.getElementById('rank-form');
+        if (rankForm) {
+            rankForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const burgerName = document.getElementById('burger-name')?.value || '';
+                const restaurantName = document.getElementById('restaurant-name')?.value || '';
+                const rating = document.querySelector('.rating-option.selected')?.dataset.rating;
+                const comment = document.getElementById('burger-comment')?.value || '';
+                const photoFile = document.getElementById('burger-photo')?.files[0];
+
+                if (!rating) {
+                    this.showToast('Please select a rating', 'error');
+                    return;
+                }
+
+                this.submitRank(burgerName, restaurantName, rating, comment, photoFile);
+            });
+        }
+
+        // Rating options (only if elements exist)
+        const ratingOptions = document.querySelectorAll('.rating-option');
+        if (ratingOptions.length > 0) {
+            ratingOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    document.querySelectorAll('.rating-option').forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                });
+            });
+        }
+
+        // Cancel rank (only if element exists)
+        const cancelRank = document.getElementById('cancel-rank');
+        if (cancelRank) {
+            cancelRank.addEventListener('click', () => this.showScreen('home'));
+        }
+
+        // Live search for existing burgers (only if element exists)
+        const burgerNameInput = document.getElementById('burger-name');
+        if (burgerNameInput) {
+            burgerNameInput.addEventListener('input', (e) => {
+                this.searchExistingBurgers(e.target.value);
+            });
+        }
+
+        // Live search for existing restaurants (only if element exists)
+        const restaurantNameInput = document.getElementById('restaurant-name');
+        if (restaurantNameInput) {
+            restaurantNameInput.addEventListener('input', (e) => {
+                this.searchExistingRestaurants(e.target.value);
+            });
+        }
 
         // Enhanced photo upload functionality
         this.setupPhotoUpload();
 
-        // Logo click to go home
-        document.getElementById('home-logo').addEventListener('click', () => {
-            this.showScreen('home');
-        });
+        // Logo click to go home (only if element exists)
+        const homeLogo = document.getElementById('home-logo');
+        if (homeLogo) {
+            homeLogo.addEventListener('click', () => {
+                this.showScreen('home');
+            });
+        }
 
         // Detail actions - using event delegation for dynamic elements
         document.addEventListener('click', (e) => {
