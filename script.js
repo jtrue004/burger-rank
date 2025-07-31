@@ -801,10 +801,19 @@ class BurgerRank {
     }
 
     logout() {
-        this.currentUser = null;
-        localStorage.removeItem('currentUser');
-        this.showAuthScreen();
-        this.showToast('Logged out successfully', 'success');
+        try {
+            console.log('Logging out user');
+            this.currentUser = null;
+            localStorage.removeItem('currentUser');
+            this.showAuthScreen();
+            this.showToast('Logged out successfully', 'success');
+        } catch (error) {
+            console.error('Error during logout:', error);
+            // Force logout even if there's an error
+            this.currentUser = null;
+            localStorage.removeItem('currentUser');
+            this.showAuthScreen();
+        }
     }
 
     // Ranking System
@@ -1218,6 +1227,7 @@ class BurgerRank {
     }
 
     searchExistingBurgers(query) {
+        console.log('Searching burgers for:', query);
         if (!query || query.length < 2) {
             this.hideSearchResults();
             return;
@@ -1227,6 +1237,7 @@ class BurgerRank {
             burger.name.toLowerCase().includes(query.toLowerCase())
         ).slice(0, 5); // Limit to 5 results
 
+        console.log('Found burger results:', results);
         if (results.length > 0) {
             this.showBurgerSearchResults(results, query);
         } else {
@@ -1235,6 +1246,7 @@ class BurgerRank {
     }
 
     searchExistingRestaurants(query) {
+        console.log('Searching restaurants for:', query);
         if (!query || query.length < 2) {
             this.hideRestaurantSearchResults();
             return;
@@ -1244,6 +1256,7 @@ class BurgerRank {
             restaurant.name.toLowerCase().includes(query.toLowerCase())
         ).slice(0, 5); // Limit to 5 results
 
+        console.log('Found restaurant results:', results);
         if (results.length > 0) {
             this.showRestaurantSearchResults(results, query);
         } else {
@@ -1272,7 +1285,7 @@ class BurgerRank {
                 const score = this.calculateBurgerScore(burger.id);
                 const voteCount = this.getVoteCount(burger.id);
                 return `
-                    <div class="search-result-item" onclick="app.selectExistingBurger('${burger.id}')">
+                    <div class="search-result-item" onclick="window.app.selectExistingBurger('${burger.id}')">
                         <div class="search-result-info">
                             <div class="search-result-name">${burger.name}</div>
                             <div class="search-result-restaurant">${restaurant.name}</div>
@@ -1284,7 +1297,7 @@ class BurgerRank {
                     </div>
                 `;
             }).join('')}
-            <div class="search-result-item create-new" onclick="app.createNewBurger()">
+            <div class="search-result-item create-new" onclick="window.app.createNewBurger()">
                 <i class="fas fa-plus"></i>
                 Create new burger: "${query}"
             </div>
@@ -1311,7 +1324,7 @@ class BurgerRank {
             ${results.map(restaurant => {
                 const burgerCount = this.burgers.filter(b => b.restaurantId === restaurant.id).length;
                 return `
-                    <div class="search-result-item" onclick="app.selectExistingRestaurant('${restaurant.id}')">
+                    <div class="search-result-item" onclick="window.app.selectExistingRestaurant('${restaurant.id}')">
                         <div class="search-result-info">
                             <div class="search-result-name">${restaurant.name}</div>
                             <div class="search-result-details">${restaurant.address}</div>
@@ -1322,7 +1335,7 @@ class BurgerRank {
                     </div>
                 `;
             }).join('')}
-            <div class="search-result-item create-new" onclick="app.createNewRestaurant()">
+            <div class="search-result-item create-new" onclick="window.app.createNewRestaurant()">
                 <i class="fas fa-plus"></i>
                 Create new restaurant: "${query}"
             </div>
@@ -2807,17 +2820,15 @@ let app;
 // Global error handler to prevent crashes
 window.addEventListener('error', (event) => {
     console.error('Global error caught:', event.error);
-    if (app && app.showToast) {
-        app.showToast('An error occurred. Please try again.', 'error');
-    }
+    // Don't show toast for every error, just log it
+    // This prevents the app from breaking on minor errors
 });
 
 // Unhandled promise rejection handler
 window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason);
-    if (app && app.showToast) {
-        app.showToast('An error occurred. Please try again.', 'error');
-    }
+    // Don't show toast for every rejection, just log it
+    // This prevents the app from breaking on minor errors
 });
 
 document.addEventListener('DOMContentLoaded', () => {
