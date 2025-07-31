@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BurgerRank - Find the Best Burgers Near You</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Loading Screen -->
+        <div class="loading-screen" id="loading-screen">
+            <div class="loading-content">
+                <div class="logo-large">
+                    <i class="fas fa-hamburger"></i>
+                    <h1>BurgerRank</h1>
+                </div>
+                <div class="loading-spinner"></div>
+                <p>Finding the best burgers...</p>
+            </div>
+        </div>
+
+        <!-- Auth Screen -->
+        <div class="auth-screen" id="auth-screen">
+            <div class="auth-container">
+                <div class="auth-header">
+                    <div class="logo">
+                        <i class="fas fa-hamburger"></i>
+                        <h1>BurgerRank</h1>
+                    </div>
+                    <p class="tagline">Find the best burgers near you</p>
+                </div>
+                
+                <div class="auth-tabs">
+                    <button class="auth-tab active" data-tab="login">Login</button>
+                    <button class="auth-tab" data-tab="signup">Sign Up</button>
+                </div>
+
+                <!-- Login Form -->
+                <form class="auth-form active" id="login-form">
+                    <div class="form-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" id="login-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+
+                <!-- Sign Up Form -->
+                <form class="auth-form" id="signup-form">
+                    <div class="form-group">
+                        <label for="signup-userid">User ID</label>
+                        <input type="text" id="signup-userid" required placeholder="Choose a unique username">
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-email">Email</label>
+                        <input type="email" id="signup-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-phone">Phone Number</label>
+                        <input type="tel" id="signup-phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Account</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main App -->
+        <div class="main-app" id="main-app">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <h1 class="logo" id="home-logo" style="cursor: pointer;">
+                            <i class="fas fa-hamburger"></i>
+                            BurgerRank
+                        </h1>
+                    </div>
+                    <div class="header-center">
+                        <div class="search-container">
+                            <div class="search-input-group">
+                                <div class="search-field">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <input type="text" id="zip-input" placeholder="ZIP Code" maxlength="5" value="60614">
+                                </div>
+                                <div class="search-field">
+                                    <i class="fas fa-ruler"></i>
+                                    <input type="number" id="radius-input" value="10" min="1" max="100" step="1">
+                                    <span class="radius-unit">mi</span>
+                                </div>
+                            </div>
+                            <div class="search-actions">
+                                <button id="search-btn" class="btn btn-primary btn-compact">
+                                    <i class="fas fa-search"></i>
+                                    Search
+                                </button>
+                                <button id="show-all-btn" class="btn btn-secondary btn-compact">
+                                    <i class="fas fa-globe"></i>
+                                    All
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="header-right">
+                        <button class="btn btn-primary" id="rank-burger-btn">
+                            <i class="fas fa-plus"></i>
+                            Rank a Burger
+                        </button>
+                        <button class="btn btn-icon" id="profile-btn">
+                            <i class="fas fa-user"></i>
+                        </button>
+                        <button class="btn btn-icon" id="restaurants-btn">
+                            <i class="fas fa-store"></i>
+                        </button>
+                        <button class="btn btn-icon" id="my-lists-btn">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button class="btn btn-icon" id="map-btn">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Home Screen -->
+                <div class="screen active" id="home-screen">
+                    <div class="welcome-section">
+                        <h2>Best Burgers Near You</h2>
+                        <p>Discover top-rated burgers in your area</p>
+                    </div>
+                    
+                    <div class="leaderboard" id="leaderboard">
+                        <!-- Leaderboard items will be loaded here -->
+                    </div>
+
+                    <div class="quick-actions">
+                        <!-- Future quick actions can go here -->
+                    </div>
+                </div>
+
+                <!-- Map Screen -->
+                <div class="screen" id="map-screen">
+                    <div class="map-container">
+                        <div class="map-placeholder">
+                            <i class="fas fa-map"></i>
+                            <h3>Map View</h3>
+                            <p>Interactive map showing burger locations and ratings</p>
+                            <button class="btn btn-primary" id="view-directions-btn">
+                                <i class="fas fa-directions"></i>
+                                Get Directions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Restaurants Screen -->
+                <div class="screen" id="restaurants-screen">
+                    <div class="welcome-section">
+                        <h2>All Restaurants</h2>
+                        <p>Browse restaurants and their burgers</p>
+                    </div>
+                    
+                    <div class="restaurants-container" id="restaurants-container">
+                        <!-- Restaurants will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- My Lists Screen -->
+                <div class="screen" id="lists-screen">
+                    <div class="lists-header">
+                        <h2>My Lists</h2>
+                        <p>Organize your favorite burgers</p>
+                    </div>
+                    
+                    <div class="lists-container" id="lists-container">
+                        <div class="create-list-section">
+                            <button class="btn btn-primary" id="create-list-btn">
+                                <i class="fas fa-plus"></i>
+                                Create New List
+                            </button>
+                        </div>
+                        <div class="lists-grid" id="lists-grid">
+                            <!-- Lists will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Screen -->
+                <div class="screen" id="profile-screen">
+                    <div class="profile-header">
+                        <div class="profile-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="profile-info">
+                            <h3 id="profile-username">Username</h3>
+                            <p id="profile-email">email@example.com</p>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <span class="stat-number" id="stats-ratings">0</span>
+                            <span class="stat-label">Ratings</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="stats-lists">0</span>
+                            <span class="stat-label">Lists</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="stats-burgers">0</span>
+                            <span class="stat-label">Burgers Tried</span>
+                        </div>
+                    </div>
+
+                    <div class="profile-actions">
+                        <button class="btn btn-secondary" id="edit-profile-btn">
+                            <i class="fas fa-edit"></i>
+                            Edit Profile
+                        </button>
+                        <button class="btn btn-secondary" id="logout-btn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Logout
+                        </button>
+                    </div>
+
+                    <div class="profile-ratings">
+                        <h3>My Recent Ratings</h3>
+                        <div class="user-ratings" id="user-ratings">
+                            <!-- User ratings will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rank Burger Screen -->
+                <div class="screen" id="rank-screen">
+                    <div class="rank-header">
+                        <div class="rank-header-top">
+                            <button type="button" class="btn btn-secondary" id="cancel-rank">
+                                <i class="fas fa-arrow-left"></i>
+                                Cancel
+                            </button>
+                            <h2>Rank a Burger</h2>
+                        </div>
+                        <p>Share your burger experience</p>
+                    </div>
+
+                    <form class="rank-form" id="rank-form">
+                        <div class="form-group">
+                            <label for="burger-name">Burger Name</label>
+                            <input type="text" id="burger-name" required placeholder="e.g., Classic Cheeseburger">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="restaurant-name">Restaurant</label>
+                            <input type="text" id="restaurant-name" required placeholder="e.g., Joe's Diner">
+                        </div>
+
+                        <div class="form-group">
+                            <button type="button" class="btn btn-secondary" id="toggle-restaurant-details">
+                                <i class="fas fa-plus"></i>
+                                Add Restaurant Details
+                            </button>
+                        </div>
+
+                        <div class="restaurant-details-form" id="restaurant-details-form" style="display: none;">
+                            <div class="form-group">
+                                <label for="restaurant-address">Restaurant Address</label>
+                                <input type="text" id="restaurant-address" placeholder="e.g., 123 Main St, Chicago, IL 60614">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="restaurant-phone">Restaurant Phone</label>
+                                <input type="tel" id="restaurant-phone" placeholder="e.g., (312) 555-0123">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="restaurant-website">Restaurant Website</label>
+                                <input type="url" id="restaurant-website" placeholder="https://example.com">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="restaurant-instagram">Restaurant Instagram</label>
+                                <input type="url" id="restaurant-instagram" placeholder="https://instagram.com/username">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="restaurant-doordash">DoorDash Link</label>
+                                <input type="url" id="restaurant-doordash" placeholder="https://doordash.com/store/...">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="restaurant-opentable">OpenTable Link</label>
+                                <input type="url" id="restaurant-opentable" placeholder="https://opentable.com/...">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="burger-rating">How was your burger?</label>
+                            <div class="rating-options">
+                                <button type="button" class="rating-option" data-rating="1">
+                                    <span class="emoji">😞</span>
+                                    <span class="label">Very Poor</span>
+                                </button>
+                                <button type="button" class="rating-option" data-rating="2">
+                                    <span class="emoji">😐</span>
+                                    <span class="label">Poor</span>
+                                </button>
+                                <button type="button" class="rating-option" data-rating="3">
+                                    <span class="emoji">😊</span>
+                                    <span class="label">Average</span>
+                                </button>
+                                <button type="button" class="rating-option" data-rating="4">
+                                    <span class="emoji">😋</span>
+                                    <span class="label">Good</span>
+                                </button>
+                                <button type="button" class="rating-option" data-rating="5">
+                                    <span class="emoji">🤤</span>
+                                    <span class="label">Excellent</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="burger-comment">
+                                <i class="fas fa-comment"></i>
+                                Share Your Experience
+                            </label>
+                            <div class="comment-container">
+                                <textarea id="burger-comment" rows="4" placeholder="What did you think? Was it juicy? How was the bun? Any special toppings? Share the details that make this burger special..."></textarea>
+                                <div class="comment-footer">
+                                    <span class="comment-hint">💡 Tip: Be specific about what made this burger great (or not so great)!</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="burger-photo">
+                                <i class="fas fa-camera"></i>
+                                Add a Photo
+                            </label>
+                            <div class="photo-upload-container">
+                                <div class="photo-upload-area" id="photo-upload-area">
+                                    <div class="photo-upload-content">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <h4>Upload Your Burger Photo</h4>
+                                        <p>Show off that beautiful burger! Click to select or drag & drop</p>
+                                        <span class="photo-upload-hint">Supports: JPG, PNG, GIF (max 5MB)</span>
+                                    </div>
+                                    <input type="file" id="burger-photo" accept="image/*" hidden>
+                                </div>
+                                <div class="photo-preview" id="photo-preview" style="display: none;">
+                                    <img id="photo-preview-img" src="" alt="Preview">
+                                    <div class="photo-preview-actions">
+                                        <button type="button" class="btn btn-secondary btn-sm" id="change-photo-btn">
+                                            <i class="fas fa-edit"></i>
+                                            Change
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-sm" id="remove-photo-btn">
+                                            <i class="fas fa-trash"></i>
+                                            Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Submit Rating</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Burger Detail Screen -->
+                <div class="screen" id="detail-screen">
+                    <div class="detail-header">
+                        <button class="btn btn-icon back-btn">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h2 id="detail-burger-name">Burger Name</h2>
+                    </div>
+
+                    <div class="detail-content">
+                        <div class="detail-image">
+                            <img id="detail-burger-image" src="" alt="Burger">
+                        </div>
+
+                        <div class="detail-info">
+                            <div class="detail-restaurant">
+                                <h3 id="detail-restaurant-name">Restaurant Name</h3>
+                                <div class="detail-rating">
+                                    <span class="rating-score" id="detail-rating-score">85%</span>
+                                    <div class="rating-stars" id="detail-rating-stars"></div>
+                                </div>
+                            </div>
+
+                            <div class="detail-actions">
+                                <button class="btn btn-primary" id="detail-rank-btn">
+                                    <i class="fas fa-star"></i>
+                                    Rank This Burger
+                                </button>
+                                <button class="btn btn-secondary" id="detail-photo-btn">
+                                    <i class="fas fa-camera"></i>
+                                    Update Photo
+                                </button>
+                                <button class="btn btn-secondary" id="detail-data-btn">
+                                    <i class="fas fa-chart-bar"></i>
+                                    Data
+                                </button>
+                                <button class="btn btn-secondary" id="detail-edit-btn">
+                                    <i class="fas fa-edit"></i>
+                                    Edit Burger
+                                </button>
+                                <button class="btn btn-danger" id="detail-delete-btn">
+                                    <i class="fas fa-trash"></i>
+                                    Delete
+                                </button>
+                            </div>
+
+                            <div class="detail-stats">
+                                <div class="stat">
+                                    <span class="stat-label">Total Ratings</span>
+                                    <span class="stat-value" id="detail-total-ratings">0</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Average Score</span>
+                                    <span class="stat-value" id="detail-avg-score">0%</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Ranking</span>
+                                    <span class="stat-value" id="detail-ranking">#0</span>
+                                </div>
+                            </div>
+
+                            <div class="restaurant-details">
+                                <h3><i class="fas fa-store"></i> Restaurant Info</h3>
+                                <div class="restaurant-info-grid">
+                                    <div class="restaurant-info-item" id="address-item">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span id="detail-address">No address available</span>
+                                        <button class="add-data-btn" onclick="addRestaurantData('address')">Add Address</button>
+                                    </div>
+                                    <div class="restaurant-info-item" id="phone-item">
+                                        <i class="fas fa-phone"></i>
+                                        <span id="detail-phone">No phone available</span>
+                                        <button class="add-data-btn" onclick="addRestaurantData('phone')">Add Phone</button>
+                                    </div>
+                                    <div class="restaurant-info-item" id="website-item">
+                                        <i class="fas fa-globe"></i>
+                                        <span id="detail-website">No website available</span>
+                                        <button class="add-data-btn" onclick="addRestaurantData('website')">Add Website</button>
+                                    </div>
+                                    <div class="restaurant-info-item" id="instagram-item">
+                                        <i class="fab fa-instagram"></i>
+                                        <span id="detail-instagram">No Instagram available</span>
+                                        <button class="add-data-btn" onclick="addRestaurantData('instagram')">Add Instagram</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="restaurant-actions">
+                                    <a href="#" class="btn btn-secondary" id="detail-doordash" target="_blank" style="display: none;">
+                                        <i class="fas fa-utensils"></i>
+                                        Order Now
+                                    </a>
+                                    <button class="add-data-btn" onclick="addRestaurantData('doordash')" id="add-doordash-btn">
+                                        <i class="fas fa-utensils"></i>
+                                        Add DoorDash
+                                    </button>
+                                    <a href="#" class="btn btn-secondary" id="detail-opentable" target="_blank" style="display: none;">
+                                        <i class="fas fa-calendar-check"></i>
+                                        Make a Reservation
+                                    </a>
+                                    <button class="add-data-btn" onclick="addRestaurantData('opentable')" id="add-opentable-btn">
+                                        <i class="fas fa-calendar-check"></i>
+                                        Add OpenTable
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-reviews">
+                        <h3>Reviews</h3>
+                        <div class="reviews-list" id="reviews-list">
+                            <!-- Reviews will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Hidden file input for photo upload -->
+        <input type="file" id="burger-photo-upload" accept="image/*" style="display: none;">
+
+        <!-- Toast Notifications -->
+        <div class="toast-container" id="toast-container"></div>
+
+        <!-- Modal Overlays -->
+        <div class="modal" id="data-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Ranking Data</h3>
+                    <button class="close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="data-breakdown">
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">Excellent (5)</span>
+                            <div class="breakdown-bar">
+                                <div class="breakdown-fill" id="excellent-bar"></div>
+                            </div>
+                            <span class="breakdown-count" id="excellent-count">0</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">Good (4)</span>
+                            <div class="breakdown-bar">
+                                <div class="breakdown-fill" id="good-bar"></div>
+                            </div>
+                            <span class="breakdown-count" id="good-count">0</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">Average (3)</span>
+                            <div class="breakdown-bar">
+                                <div class="breakdown-fill" id="average-bar"></div>
+                            </div>
+                            <span class="breakdown-count" id="average-count">0</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">Poor (2)</span>
+                            <div class="breakdown-bar">
+                                <div class="breakdown-fill" id="poor-bar"></div>
+                            </div>
+                            <span class="breakdown-count" id="poor-count">0</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">Very Poor (1)</span>
+                            <div class="breakdown-bar">
+                                <div class="breakdown-fill" id="very-poor-bar"></div>
+                            </div>
+                            <span class="breakdown-count" id="very-poor-count">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Burger Modal -->
+        <div class="modal" id="edit-burger-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Edit Burger</h3>
+                    <button class="close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-burger-form">
+                        <div class="form-group">
+                            <label for="edit-burger-name">Burger Name</label>
+                            <input type="text" id="edit-burger-name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="edit-restaurant-name">Restaurant Name</label>
+                            <input type="text" id="edit-restaurant-name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="edit-restaurant-address">Restaurant Address</label>
+                            <input type="text" id="edit-restaurant-address" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="edit-restaurant-phone">Restaurant Phone</label>
+                            <input type="tel" id="edit-restaurant-phone">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="edit-restaurant-website">Restaurant Website</label>
+                            <input type="url" id="edit-restaurant-website" placeholder="https://example.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="edit-restaurant-instagram">Restaurant Instagram</label>
+                            <input type="url" id="edit-restaurant-instagram" placeholder="https://instagram.com/username">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="edit-restaurant-doordash">DoorDash Link</label>
+                            <input type="url" id="edit-restaurant-doordash" placeholder="https://doordash.com/store/...">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="edit-restaurant-opentable">OpenTable Link</label>
+                            <input type="url" id="edit-restaurant-opentable" placeholder="https://opentable.com/...">
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" id="cancel-edit">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
