@@ -115,6 +115,9 @@
                             <i class="fas fa-plus"></i>
                             Rank a Burger
                         </button>
+                        <button class="btn btn-icon search-toggle-btn" id="search-toggle-btn" title="Search burgers & restaurants">
+                            <i class="fas fa-search"></i>
+                        </button>
                         <button class="btn btn-icon" id="profile-btn">
                             <i class="fas fa-user"></i>
                         </button>
@@ -138,6 +141,17 @@
                     <div class="welcome-section">
                         <h2>Best Burgers Near You</h2>
                         <p>Discover top-rated burgers in your area</p>
+                    </div>
+                    
+                    <div class="leaderboard-toggle">
+                        <button class="toggle-btn active" id="top-ranked-btn" data-section="top-ranked">
+                            <i class="fas fa-trophy"></i>
+                            Top Ranked
+                        </button>
+                        <button class="toggle-btn" id="new-trending-btn" data-section="new-trending">
+                            <i class="fas fa-fire"></i>
+                            New & Trending
+                        </button>
                     </div>
                     
                     <div class="leaderboard" id="leaderboard">
@@ -307,7 +321,7 @@
 
                         <div class="form-group">
                             <label for="burger-rating">How was your burger?</label>
-                            <div class="rating-options">
+                            <div class="rating-options" id="burger-rating">
                                 <button type="button" class="rating-option" data-rating="1">
                                     <span class="emoji">😞</span>
                                     <span class="label">Very Poor</span>
@@ -608,6 +622,32 @@
                             <button type="submit" class="btn btn-primary">Save Changes</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Overlay -->
+        <div class="search-overlay" id="search-overlay">
+            <div class="search-overlay-content">
+                <div class="search-overlay-header">
+                    <h2><i class="fas fa-search"></i> Search</h2>
+                    <button class="search-close-btn" id="search-close-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="search-overlay-body">
+                    <div class="search-input-container">
+                        <div class="search-input-wrapper">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="overlay-search-input" placeholder="Search burgers & restaurants..." autocomplete="off">
+                            <button class="search-clear-btn" id="search-clear-btn">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="search-results-container" id="overlay-search-results">
+                        <!-- Search results will be populated here -->
+                    </div>
                 </div>
             </div>
         </div>

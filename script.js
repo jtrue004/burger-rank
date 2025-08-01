@@ -10,6 +10,9 @@ class BurgerRank {
         this.users = [];
         this.currentLocation = '60614';
         this.searchRadius = 10;
+        this.currentLeaderboardSection = 'top-ranked';
+        this.currentRankingBurgerId = null;
+        this.currentBurgerId = null;
         
         this.init();
     }
@@ -21,10 +24,10 @@ class BurgerRank {
             this.setupEventListeners();
             this.showLoadingScreen();
             
-            // Simulate loading time
+            // Quick load - no delays
             setTimeout(() => {
                 this.checkAuth();
-            }, 2000);
+            }, 500);
         } catch (error) {
             console.error('Error initializing app:', error);
             // If there's an error, try to show the auth screen anyway
@@ -32,6 +35,14 @@ class BurgerRank {
                 this.showAuthScreen();
             }, 1000);
         }
+        
+        // Fallback timeout - if still loading after 5 seconds, force auth screen
+        setTimeout(() => {
+            if (this.currentScreen === 'loading') {
+                console.log('Fallback: forcing auth screen due to timeout');
+                this.showAuthScreen();
+            }
+        }, 5000);
     }
 
     // Data Management
@@ -503,10 +514,15 @@ class BurgerRank {
         this.users = sampleUsers;
         this.ranks = sampleRanks;
         
-        // Generate additional random reviews for all burgers
-        this.generateRandomReviews();
+        // Skip random review generation entirely to prevent hanging
+        console.log('Skipping random review generation for performance');
         
-        this.saveData();
+        try {
+            this.saveData();
+        } catch (error) {
+            console.error('Error saving data:', error);
+            // Continue even if save fails
+        }
     }
 
     generateRandomReviews() {
@@ -611,9 +627,9 @@ class BurgerRank {
         
         let reviewId = 36; // Start after existing reviews
         
-        // Generate 30 random reviews for each burger
+        // Generate 2 random reviews for each burger (minimal to prevent hanging)
         this.burgers.forEach(burger => {
-            for (let i = 0; i < 30; i++) {
+            for (let i = 0; i < 2; i++) {
                 // Random score (1-5, but convert to our -2 to +2 scale)
                 const randomScore = Math.floor(Math.random() * 5) + 1;
                 const score = randomScore === 1 ? -2 : randomScore === 2 ? -1 : randomScore === 3 ? 0 : randomScore === 4 ? 1 : 2;
@@ -1115,6 +1131,25 @@ class BurgerRank {
             return b.voteCount - a.voteCount;
         });
 
+        // Determine which dataset to show based on current selection
+        let burgersToShow = [];
+        let sectionTitle = '';
+        let sectionSubtitle = '';
+        let sectionIcon = '';
+
+        if (this.currentLeaderboardSection === 'new-trending') {
+            burgersToShow = newTrending;
+            sectionTitle = `New & Trending (${newTrending.length})`;
+            sectionSubtitle = 'Burgers with <10 votes, ranked by raw score';
+            sectionIcon = 'fas fa-fire';
+        } else {
+            // Default to top-ranked
+            burgersToShow = topRanked;
+            sectionTitle = `Top Ranked (${topRanked.length})`;
+            sectionSubtitle = 'Burgers with 10+ votes, ranked by weighted score';
+            sectionIcon = 'fas fa-trophy';
+        }
+
         if (burgersWithScores.length === 0) {
             leaderboard.innerHTML = `
                 <div class="text-center" style="color: white; font-size: 1.2rem; margin-top: 2rem;">
@@ -1127,27 +1162,28 @@ class BurgerRank {
         console.log('Final burgers to display:', burgersWithScores.length);
         console.log('Top Ranked:', topRanked.length, 'New & Trending:', newTrending.length);
 
-        // Build the leaderboard HTML with sections
+        // Build the leaderboard HTML with the selected dataset
         let leaderboardHTML = '';
 
-        // Top Ranked section
-        if (topRanked.length > 0) {
+        if (burgersToShow.length > 0) {
             leaderboardHTML += `
                 <div class="leaderboard-section">
                     <div class="section-header">
                         <div class="section-title-group">
                             <h3 class="section-title">
-                                <i class="fas fa-trophy"></i>
-                                Top Ranked (${topRanked.length})
+                                <i class="${sectionIcon}"></i>
+                                ${sectionTitle}
                             </h3>
-                            <p class="section-subtitle">Burgers with 10+ votes, ranked by weighted score</p>
+                            <p class="section-subtitle">${sectionSubtitle}</p>
                         </div>
-                        <button class="btn btn-secondary learn-more-btn" onclick="app.showScoringExplanation()">
-                            <i class="fas fa-info-circle"></i>
-                            Learn More
-                        </button>
+                        ${this.currentLeaderboardSection === 'top-ranked' ? `
+                            <button class="btn btn-secondary learn-more-btn" onclick="app.showScoringExplanation()">
+                                <i class="fas fa-info-circle"></i>
+                                Learn More
+                            </button>
+                        ` : ''}
                     </div>
-                    ${topRanked.map((burger, index) => {
+                    ${burgersToShow.map((burger, index) => {
                         const reviews = this.ranks.filter(rank => rank.burgerId === burger.id && rank.comment).slice(0, 2);
                         return `
                             <div class="leaderboard-item" data-burger-id="${burger.id}">
@@ -1194,63 +1230,7 @@ class BurgerRank {
             `;
         }
 
-        // New & Trending section
-        if (newTrending.length > 0) {
-            leaderboardHTML += `
-                <div class="leaderboard-section">
-                    <h3 class="section-title">
-                        <i class="fas fa-fire"></i>
-                        New & Trending (${newTrending.length})
-                    </h3>
-                    <p class="section-subtitle">Burgers with <10 votes, ranked by raw score</p>
-                    ${newTrending.map((burger, index) => {
-                        const reviews = this.ranks.filter(rank => rank.burgerId === burger.id && rank.comment).slice(0, 2);
-                        return `
-                            <div class="leaderboard-item" data-burger-id="${burger.id}">
-                                <div class="leaderboard-rank">#${index + 1}</div>
-                                <div class="leaderboard-image">
-                                    ${burger.imageUrl ? 
-                                        `<img src="${burger.imageUrl}" alt="${burger.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                         <i class="fas fa-hamburger" style="display: none;"></i>` :
-                                        `<i class="fas fa-hamburger"></i>`
-                                    }
-                                </div>
-                                                            <div class="leaderboard-content">
-                                <div class="leaderboard-main-content">
-                                    <div class="leaderboard-burger-info">
-                                        <div class="leaderboard-title">${burger.name}</div>
-                                        <div class="leaderboard-restaurant">${burger.restaurant.name}</div>
-                                        <div class="leaderboard-rating">
-                                            <span class="rating-score">${burger.rawScore}%</span>
-                                            <div class="rating-stars">${this.getStarRating(burger.rawScore)}</div>
-                                            <div class="vote-counter">
-                                                <i class="fas fa-users"></i>
-                                                <span class="vote-count">${burger.voteCount}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    ${reviews.length > 0 ? `
-                                        <div class="leaderboard-reviews">
-                                            <div class="reviews-scroll">
-                                                ${reviews.map(review => `
-                                                    <div class="review-preview">
-                                                        <span class="review-text">"${review.comment.length > 60 ? review.comment.substring(0, 60) + '...' : review.comment}"</span>
-                                                        <span class="review-author">- ${review.userId}</span>
-                                                    </div>
-                                                `).join('')}
-                                            </div>
-                                        </div>
-                                    ` : ''}
-                                </div>
-                            </div>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            `;
-        }
-
-                leaderboard.innerHTML = leaderboardHTML;
+        leaderboard.innerHTML = leaderboardHTML;
 
         // Add click event listeners to leaderboard items
         leaderboard.querySelectorAll('.leaderboard-item').forEach(item => {
@@ -1320,7 +1300,7 @@ class BurgerRank {
                 const score = this.calculateBurgerScore(burger.id);
                 const voteCount = this.getVoteCount(burger.id);
                 return `
-                    <div class="search-result-item" onclick="window.app.selectExistingBurger('${burger.id}')">
+                    <div class="search-result-item" data-burger-id="${burger.id}">
                         <div class="search-result-info">
                             <div class="search-result-name">${burger.name}</div>
                             <div class="search-result-restaurant">${restaurant.name}</div>
@@ -1359,7 +1339,7 @@ class BurgerRank {
             ${results.map(restaurant => {
                 const burgerCount = this.burgers.filter(b => b.restaurantId === restaurant.id).length;
                 return `
-                    <div class="search-result-item" onclick="window.app.selectExistingRestaurant('${restaurant.id}')">
+                    <div class="search-result-item" data-restaurant-id="${restaurant.id}">
                         <div class="search-result-info">
                             <div class="search-result-name">${restaurant.name}</div>
                             <div class="search-result-details">${restaurant.address}</div>
@@ -2382,6 +2362,25 @@ class BurgerRank {
             });
         }
 
+        // Add event delegation for search result clicks
+        document.addEventListener('click', (e) => {
+            // Handle burger search result clicks
+            if (e.target.closest('#burger-search-results .search-result-item')) {
+                const burgerId = e.target.closest('.search-result-item').dataset.burgerId;
+                if (burgerId) {
+                    this.selectExistingBurger(burgerId);
+                }
+            }
+
+            // Handle restaurant search result clicks
+            if (e.target.closest('#restaurant-search-results .search-result-item')) {
+                const restaurantId = e.target.closest('.search-result-item').dataset.restaurantId;
+                if (restaurantId) {
+                    this.selectExistingRestaurant(restaurantId);
+                }
+            }
+        });
+
         // Enhanced photo upload functionality
         this.setupPhotoUpload();
 
@@ -2390,6 +2389,70 @@ class BurgerRank {
         if (homeLogo) {
             homeLogo.addEventListener('click', () => {
                 this.showScreen('home');
+            });
+        }
+
+        // Search overlay functionality
+        const searchToggleBtn = document.getElementById('search-toggle-btn');
+        const searchOverlay = document.getElementById('search-overlay');
+        const searchCloseBtn = document.getElementById('search-close-btn');
+        const overlaySearchInput = document.getElementById('overlay-search-input');
+        const searchClearBtn = document.getElementById('search-clear-btn');
+        const searchTabs = document.querySelectorAll('.search-tab');
+
+        if (searchToggleBtn) {
+            searchToggleBtn.addEventListener('click', () => {
+                this.openSearchOverlay();
+            });
+        }
+
+        if (searchCloseBtn) {
+            searchCloseBtn.addEventListener('click', () => {
+                this.closeSearchOverlay();
+            });
+        }
+
+        if (searchOverlay) {
+            searchOverlay.addEventListener('click', (e) => {
+                if (e.target === searchOverlay) {
+                    this.closeSearchOverlay();
+                }
+            });
+        }
+
+        if (overlaySearchInput) {
+            overlaySearchInput.addEventListener('input', (e) => {
+                this.performOverlaySearch(e.target.value);
+            });
+
+            overlaySearchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    this.closeSearchOverlay();
+                }
+            });
+        }
+
+        if (searchClearBtn) {
+            searchClearBtn.addEventListener('click', () => {
+                this.clearOverlaySearch();
+            });
+        }
+
+        // Search tabs (removed - now unified search)
+
+        // Leaderboard toggle buttons
+        const topRankedBtn = document.getElementById('top-ranked-btn');
+        const newTrendingBtn = document.getElementById('new-trending-btn');
+
+        if (topRankedBtn) {
+            topRankedBtn.addEventListener('click', () => {
+                this.switchLeaderboardSection('top-ranked');
+            });
+        }
+
+        if (newTrendingBtn) {
+            newTrendingBtn.addEventListener('click', () => {
+                this.switchLeaderboardSection('new-trending');
             });
         }
 
@@ -2935,6 +2998,165 @@ class BurgerRank {
             this.showToast('An error occurred', 'error');
         }
     }
+
+    // Search Overlay Methods
+    openSearchOverlay() {
+        const overlay = document.getElementById('search-overlay');
+        if (overlay) {
+            overlay.classList.add('active');
+            const input = document.getElementById('overlay-search-input');
+            if (input) {
+                input.focus();
+            }
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    closeSearchOverlay() {
+        const overlay = document.getElementById('search-overlay');
+        if (overlay) {
+            overlay.classList.remove('active');
+            const input = document.getElementById('overlay-search-input');
+            if (input) {
+                input.value = '';
+            }
+            this.clearOverlaySearchResults();
+            // Restore body scroll
+            document.body.style.overflow = '';
+        }
+    }
+
+    performOverlaySearch(query) {
+        if (!query || query.length < 2) {
+            this.clearOverlaySearchResults();
+            return;
+        }
+
+        // Search both burgers and restaurants
+        const burgerResults = this.burgers.filter(burger => 
+            burger.name.toLowerCase().includes(query.toLowerCase())
+        ).slice(0, 5);
+
+        const restaurantResults = this.restaurants.filter(restaurant => 
+            restaurant.name.toLowerCase().includes(query.toLowerCase())
+        ).slice(0, 5);
+
+        this.displayOverlaySearchResults(burgerResults, restaurantResults, query);
+    }
+
+    displayOverlaySearchResults(burgerResults, restaurantResults, query) {
+        const container = document.getElementById('overlay-search-results');
+        if (!container) return;
+
+        const totalResults = burgerResults.length + restaurantResults.length;
+
+        if (totalResults === 0) {
+            container.innerHTML = `
+                <div style="padding: 2rem; text-align: center; color: rgba(255, 255, 255, 0.7);">
+                    <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                    <p>No results found for "${query}"</p>
+                </div>
+            `;
+            return;
+        }
+
+        let resultsHtml = '';
+
+        // Add burger results
+        if (burgerResults.length > 0) {
+            resultsHtml += `
+                <div style="padding: 0.5rem 1rem; background: rgba(255, 107, 53, 0.1); color: #ff6b35; font-weight: 600; font-size: 0.9rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                    <i class="fas fa-hamburger"></i> Burgers (${burgerResults.length})
+                </div>
+            `;
+            
+            burgerResults.forEach(item => {
+                const restaurant = this.restaurants.find(r => r.id === item.restaurantId);
+                const score = this.calculateBurgerScore(item.id);
+                const voteCount = this.getVoteCount(item.id);
+                resultsHtml += `
+                    <div class="search-result-item" onclick="window.app.selectOverlayBurger('${item.id}')">
+                        <img src="${item.photo || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjRkY2QjM1Ii8+CjxwYXRoIGQ9Ik0xNSAxNUgzNVYzNUgxNVYxNVoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo='}" alt="${item.name}">
+                        <div class="search-result-info">
+                            <div class="search-result-name">${item.name}</div>
+                            <div class="search-result-details">${restaurant ? restaurant.name : 'Unknown Restaurant'}</div>
+                        </div>
+                        <div class="search-result-stats">
+                            <div>${score}%</div>
+                            <div style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.7);">${voteCount} votes</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Add restaurant results
+        if (restaurantResults.length > 0) {
+            resultsHtml += `
+                <div style="padding: 0.5rem 1rem; background: rgba(255, 107, 53, 0.1); color: #ff6b35; font-weight: 600; font-size: 0.9rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                    <i class="fas fa-store"></i> Restaurants (${restaurantResults.length})
+                </div>
+            `;
+            
+            restaurantResults.forEach(item => {
+                const burgerCount = this.burgers.filter(b => b.restaurantId === item.id).length;
+                resultsHtml += `
+                    <div class="search-result-item" onclick="window.app.selectOverlayRestaurant('${item.id}')">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjRkY2QjM1Ii8+CjxwYXRoIGQ9Ik0xNSAxNUgzNVYzNUgxNVYxNVoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=" alt="${item.name}">
+                        <div class="search-result-info">
+                            <div class="search-result-name">${item.name}</div>
+                            <div class="search-result-details">${item.address || 'No address'}</div>
+                        </div>
+                        <div class="search-result-stats">
+                            <div>${burgerCount} burgers</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        container.innerHTML = resultsHtml;
+    }
+
+    selectOverlayBurger(burgerId) {
+        this.closeSearchOverlay();
+        this.showBurgerDetail(burgerId);
+    }
+
+    selectOverlayRestaurant(restaurantId) {
+        this.closeSearchOverlay();
+        this.showRestaurantDetail(restaurantId);
+    }
+
+    clearOverlaySearch() {
+        const input = document.getElementById('overlay-search-input');
+        if (input) {
+            input.value = '';
+        }
+        this.clearOverlaySearchResults();
+    }
+
+    clearOverlaySearchResults() {
+        const container = document.getElementById('overlay-search-results');
+        if (container) {
+            container.innerHTML = '';
+        }
+    }
+
+    switchLeaderboardSection(section) {
+        // Update active button
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-section="${section}"]`).classList.add('active');
+
+        // Store the current section preference
+        this.currentLeaderboardSection = section;
+
+        // Reload the leaderboard with the selected dataset
+        this.loadLeaderboard();
+    }
 }
 
 // Initialize the app
@@ -2956,20 +3178,30 @@ window.addEventListener('unhandledrejection', (event) => {
 
 document.addEventListener('DOMContentLoaded', () => {
     try {
+        console.log('DOM loaded, creating app...');
         app = new BurgerRank();
         
-        // Fallback: if still on loading screen after 5 seconds, force auth screen
+        // Fallback: if still on loading screen after 3 seconds, force auth screen
         setTimeout(() => {
-            if (app.currentScreen === 'loading') {
+            console.log('Checking app state...');
+            if (app && app.currentScreen === 'loading') {
                 console.log('Fallback: forcing auth screen');
                 app.showAuthScreen();
+            } else if (!app) {
+                console.log('App not created, showing auth screen');
+                const loadingScreen = document.getElementById('loading-screen');
+                const authScreen = document.getElementById('auth-screen');
+                if (loadingScreen) loadingScreen.style.display = 'none';
+                if (authScreen) authScreen.style.display = 'flex';
             }
-        }, 5000);
+        }, 3000);
     } catch (error) {
         console.error('Error creating app:', error);
         // Show auth screen as fallback
-        document.getElementById('loading-screen').style.display = 'none';
-        document.getElementById('auth-screen').style.display = 'flex';
+        const loadingScreen = document.getElementById('loading-screen');
+        const authScreen = document.getElementById('auth-screen');
+        if (loadingScreen) loadingScreen.style.display = 'none';
+        if (authScreen) authScreen.style.display = 'flex';
     }
 });
 
@@ -2994,4 +3226,13 @@ style.textContent = `
         to { transform: translateX(100%); opacity: 0; }
     }
 `;
-document.head.appendChild(style); 
+document.head.appendChild(style);
+
+// Emergency fallback - if nothing happens after 5 seconds, force auth screen
+setTimeout(() => {
+    console.log('Emergency fallback: forcing auth screen');
+    const loadingScreen = document.getElementById('loading-screen');
+    const authScreen = document.getElementById('auth-screen');
+    if (loadingScreen) loadingScreen.style.display = 'none';
+    if (authScreen) authScreen.style.display = 'flex';
+}, 5000); 
