@@ -696,11 +696,17 @@ class BurgerRank {
 
     showAuthScreen() {
         try {
-            console.log('Showing auth screen...');
+            console.log('=== SHOWING AUTH SCREEN ===');
+            console.log('Called by:', new Error().stack);
+            console.log('Current user when auth shown:', this.currentUser);
+            console.log('Current screen before:', this.currentScreen);
+            
             this.currentScreen = 'auth';
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('auth-screen').style.display = 'flex';
             document.getElementById('main-app').style.display = 'none';
+            
+            console.log('Auth screen display complete');
         } catch (error) {
             console.error('Error showing auth screen:', error);
         }
@@ -864,11 +870,21 @@ class BurgerRank {
 
     logout() {
         try {
-            console.log('Logging out user');
+            console.log('=== LOGOUT TRIGGERED ===');
+            console.log('Logout called by:', new Error().stack);
+            console.log('Current user before logout:', this.currentUser);
+            console.log('LocalStorage before logout:', {
+                currentUser: localStorage.getItem('currentUser'),
+                userEmail: localStorage.getItem('userEmail'),
+                isLoggedIn: localStorage.getItem('isLoggedIn')
+            });
+            
             this.currentUser = null;
             localStorage.removeItem('currentUser');
             this.showAuthScreen();
             this.showToast('Logged out successfully', 'success');
+            
+            console.log('=== LOGOUT COMPLETE ===');
         } catch (error) {
             console.error('Error during logout:', error);
             // Force logout even if there's an error
@@ -3271,16 +3287,22 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Fallback: if still on loading screen after 3 seconds, force auth screen
         setTimeout(() => {
-            console.log('Checking app state...');
+            console.log('Checking app state after 3 seconds...');
+            console.log('App exists:', !!app);
+            console.log('App currentScreen:', app ? app.currentScreen : 'N/A');
+            console.log('App currentUser:', app ? !!app.currentUser : 'N/A');
+            
             if (app && app.currentScreen === 'loading') {
-                console.log('Fallback: forcing auth screen');
+                console.log('Fallback: App stuck on loading screen, forcing auth screen');
                 app.showAuthScreen();
             } else if (!app) {
-                console.log('App not created, showing auth screen');
+                console.log('Fallback: App not created, showing auth screen');
                 const loadingScreen = document.getElementById('loading-screen');
                 const authScreen = document.getElementById('auth-screen');
                 if (loadingScreen) loadingScreen.style.display = 'none';
                 if (authScreen) authScreen.style.display = 'flex';
+            } else {
+                console.log('Fallback: App working normally, no action needed');
             }
         }, 3000);
     } catch (error) {
@@ -3316,11 +3338,19 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Emergency fallback - if nothing happens after 5 seconds, force auth screen
+// Emergency fallback - ONLY if still on loading screen after 5 seconds
 setTimeout(() => {
-    console.log('Emergency fallback: forcing auth screen');
+    console.log('Emergency fallback: checking if still on loading screen...');
     const loadingScreen = document.getElementById('loading-screen');
     const authScreen = document.getElementById('auth-screen');
-    if (loadingScreen) loadingScreen.style.display = 'none';
-    if (authScreen) authScreen.style.display = 'flex';
+    
+    // CRITICAL: Only force auth screen if we're actually stuck on loading
+    if (loadingScreen && loadingScreen.style.display !== 'none' && 
+        (!app || app.currentScreen === 'loading')) {
+        console.log('Emergency fallback: App stuck on loading screen, forcing auth screen');
+        if (loadingScreen) loadingScreen.style.display = 'none';
+        if (authScreen) authScreen.style.display = 'flex';
+    } else {
+        console.log('Emergency fallback: App working normally, no action needed');
+    }
 }, 5000); 
