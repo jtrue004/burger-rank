@@ -452,64 +452,148 @@ body {
     min-width: auto;
 }
 
-/* Review Previews in Leaderboard */
+/* Modern Review System in Leaderboard */
 .leaderboard-reviews {
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
     margin-left: 1rem;
     flex: 1;
 }
 
-.reviews-scroll {
-    max-height: 80px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+.reviews-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.reviews-scroll::-webkit-scrollbar {
-    width: 4px;
+.reviews-scroll-horizontal {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    flex: 1;
+    padding: 0.25rem 0;
 }
 
-.reviews-scroll::-webkit-scrollbar-track {
-    background: transparent;
+.review-card {
+    min-width: 280px;
+    max-width: 320px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0.7;
+    transform: scale(0.95);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
-.reviews-scroll::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 2px;
+.review-card.active {
+    opacity: 1;
+    transform: scale(1);
+    border-color: rgba(255, 107, 53, 0.3);
+    box-shadow: 0 8px 32px rgba(255, 107, 53, 0.2);
 }
 
-.review-preview {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    padding: 0.5rem 0.75rem;
-    margin-bottom: 0.5rem;
-    border-left: 3px solid #ff6b35;
-    backdrop-filter: blur(10px);
+.review-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
-.review-preview:last-child {
-    margin-bottom: 0;
+.review-stars {
+    display: flex;
+    gap: 0.2rem;
+}
+
+.review-stars .fa-star {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.3);
+    transition: color 0.2s ease;
+}
+
+.review-stars .fa-star.filled {
+    color: #ffc107;
+    text-shadow: 0 0 8px rgba(255, 193, 7, 0.4);
 }
 
 .review-text {
-    display: block;
     color: #ffffff;
-    font-size: 0.85rem;
-    line-height: 1.4;
+    font-size: 0.9rem;
+    line-height: 1.5;
     font-style: italic;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    margin: 0;
+    min-height: 2.5rem;
 }
 
 .review-author {
-    display: block;
-    color: #ffd4c4;
-    font-size: 0.75rem;
-    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 212, 196, 0.9);
+    font-size: 0.8rem;
     font-weight: 500;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.review-author i {
+    color: #ff6b35;
+    font-size: 1rem;
+}
+
+.review-nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    flex-shrink: 0;
+}
+
+.review-nav-btn:hover {
+    background: rgba(255, 107, 53, 0.2);
+    border-color: rgba(255, 107, 53, 0.4);
+    transform: scale(1.1);
+}
+
+.review-nav-btn:active {
+    transform: scale(0.95);
+}
+
+.review-nav-btn i {
+    font-size: 0.8rem;
+}
+
+.review-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.review-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.review-dot.active {
+    background: #ff6b35;
+    box-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
+    transform: scale(1.2);
 }
 
 /* My Lists Feature */
@@ -2197,16 +2281,37 @@ body {
         width: 100%;
     }
 
-    .review-preview {
-        padding: 0.4rem 0.6rem;
+    .review-card {
+        min-width: 200px;
+        max-width: 240px;
+        padding: 0.75rem;
     }
 
     .review-text {
         font-size: 0.8rem;
+        min-height: 2rem;
     }
 
     .review-author {
+        font-size: 0.75rem;
+    }
+
+    .review-nav-btn {
+        width: 28px;
+        height: 28px;
+    }
+
+    .review-nav-btn i {
         font-size: 0.7rem;
+    }
+
+    .review-dots {
+        margin-top: 0.5rem;
+    }
+
+    .review-dot {
+        width: 6px;
+        height: 6px;
     }
 }
 

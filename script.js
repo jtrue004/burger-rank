@@ -1222,14 +1222,39 @@ class BurgerRank {
                                     </div>
                                     ${reviews.length > 0 ? `
                                         <div class="leaderboard-reviews">
-                                            <div class="reviews-scroll">
-                                                ${reviews.map(review => `
-                                                    <div class="review-preview">
-                                                        <span class="review-text">"${review.comment.length > 60 ? review.comment.substring(0, 60) + '...' : review.comment}"</span>
-                                                        <span class="review-author">- ${review.userId}</span>
-                                                    </div>
-                                                `).join('')}
+                                            <div class="reviews-container">
+                                                <button class="review-nav-btn review-nav-left" onclick="app.scrollReviews('${burger.id}', 'left')" style="display: ${reviews.length > 1 ? 'flex' : 'none'}">
+                                                    <i class="fas fa-chevron-left"></i>
+                                                </button>
+                                                <div class="reviews-scroll-horizontal" id="reviews-scroll-${burger.id}">
+                                                    ${reviews.map((review, index) => `
+                                                        <div class="review-card ${index === 0 ? 'active' : ''}">
+                                                            <div class="review-content">
+                                                                <div class="review-stars">
+                                                                    ${Array.from({length: 5}, (_, i) => 
+                                                                        `<i class="fas fa-star ${i < Math.max(1, Math.round((review.score + 2) * 1.25)) ? 'filled' : ''}"></i>`
+                                                                    ).join('')}
+                                                                </div>
+                                                                <p class="review-text">"${review.comment.length > 80 ? review.comment.substring(0, 80) + '...' : review.comment}"</p>
+                                                                <div class="review-author">
+                                                                    <i class="fas fa-user-circle"></i>
+                                                                    <span>${review.userId}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    `).join('')}
+                                                </div>
+                                                <button class="review-nav-btn review-nav-right" onclick="app.scrollReviews('${burger.id}', 'right')" style="display: ${reviews.length > 1 ? 'flex' : 'none'}">
+                                                    <i class="fas fa-chevron-right"></i>
+                                                </button>
                                             </div>
+                                            ${reviews.length > 1 ? `
+                                                <div class="review-dots" id="review-dots-${burger.id}">
+                                                    ${reviews.map((_, index) => `
+                                                        <span class="review-dot ${index === 0 ? 'active' : ''}" onclick="app.scrollToReview('${burger.id}', ${index})"></span>
+                                                    `).join('')}
+                                                </div>
+                                            ` : ''}
                                         </div>
                                     ` : ''}
                                 </div>
@@ -3167,6 +3192,58 @@ class BurgerRank {
 
         // Reload the leaderboard with the selected dataset
         this.loadLeaderboard();
+    }
+
+    // Review Navigation Functions
+    scrollReviews(burgerId, direction) {
+        const container = document.getElementById(`reviews-scroll-${burgerId}`);
+        const cards = container.querySelectorAll('.review-card');
+        
+        let currentIndex = 0;
+        cards.forEach((card, index) => {
+            if (card.classList.contains('active')) {
+                currentIndex = index;
+            }
+        });
+
+        let newIndex;
+        if (direction === 'left') {
+            newIndex = currentIndex > 0 ? currentIndex - 1 : cards.length - 1;
+        } else {
+            newIndex = currentIndex < cards.length - 1 ? currentIndex + 1 : 0;
+        }
+
+        this.scrollToReview(burgerId, newIndex);
+    }
+
+    scrollToReview(burgerId, index) {
+        const container = document.getElementById(`reviews-scroll-${burgerId}`);
+        const cards = container.querySelectorAll('.review-card');
+        const dotsContainer = document.getElementById(`review-dots-${burgerId}`);
+        
+        if (!container || !cards.length) return;
+
+        // Remove active class from all cards
+        cards.forEach(card => card.classList.remove('active'));
+
+        // Add active class to target card
+        if (cards[index]) {
+            cards[index].classList.add('active');
+            const cardWidth = cards[index].offsetWidth + 12; // Include gap
+            container.scrollTo({
+                left: index * cardWidth,
+                behavior: 'smooth'
+            });
+        }
+        
+        // Update dots if they exist
+        if (dotsContainer) {
+            const dots = dotsContainer.querySelectorAll('.review-dot');
+            dots.forEach(dot => dot.classList.remove('active'));
+            if (dots[index]) {
+                dots[index].classList.add('active');
+            }
+        }
     }
 }
 
