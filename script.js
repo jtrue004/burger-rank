@@ -99,6 +99,11 @@ class BurgerRank {
         const currentRanks = JSON.parse(localStorage.getItem('ranks')) || [];
         const currentUsers = JSON.parse(localStorage.getItem('users')) || [];
         
+        // CRITICAL: Preserve authentication data to prevent logout!
+        const currentUser = localStorage.getItem('currentUser');
+        const userEmail = localStorage.getItem('userEmail');
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        
         // Preserve user-created data
         const userBurgers = currentBurgers.filter(burger => 
             !burger.id.startsWith('burger') // Sample burgers have IDs like 'burger1', 'burger2', etc.
@@ -113,11 +118,17 @@ class BurgerRank {
             userBurgers: userBurgers.length,
             userRestaurants: userRestaurants.length,
             userRanks: userRanks.length,
-            userUsers: userUsers.length
+            userUsers: userUsers.length,
+            hasAuthData: !!(currentUser || userEmail || isLoggedIn)
         });
         
-        // Clear localStorage to reload sample data
+        // Clear localStorage to reload sample data (but preserve auth)
         localStorage.clear();
+        
+        // CRITICAL: Restore authentication data immediately after clear
+        if (currentUser) localStorage.setItem('currentUser', currentUser);
+        if (userEmail) localStorage.setItem('userEmail', userEmail);
+        if (isLoggedIn) localStorage.setItem('isLoggedIn', isLoggedIn);
         
         // Reload sample data
         this.loadSampleData();
